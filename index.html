@@ -169,6 +169,7 @@
   .banner{border-radius:16px;padding:16px 18px;margin-top:16px;font-weight:600;display:flex;align-items:center;gap:10px;}
   .banner.ok{background:var(--green-soft);color:#1e8a3e;}
   .banner.no{background:var(--red-soft);color:#c0392b;}
+  .banner.skip{background:var(--bg);color:var(--blue);border:1px solid var(--line);}
   .exp{margin-top:14px;border-top:1px dashed var(--line);padding-top:14px;}
   .exp h4{margin:0 0 8px;font-size:13px;color:var(--ink2);font-weight:600;letter-spacing:.4px;}
   .exp p{margin:0 0 10px;white-space:normal;color:var(--ink);line-height:1.7;}
@@ -462,6 +463,7 @@
               <button class="tool-tab" id="draftTab">📝 草稿</button>
               <span class="actions">
                 <button class="btn" id="submitBtn">提交</button>
+                <button class="btn ghost" id="skipBtn">跳过</button>
                 <button class="btn hide" id="nextBtn">下一题 →</button>
                 <button class="btn ghost hide" id="askAiBtn">问 AI 这道题</button>
               </span>
@@ -829,6 +831,7 @@ function renderQuestion(){
     $('#pOpts').classList.remove('locked');
     $('#pResult').innerHTML='';
     $('#submitBtn').classList.remove('hide');
+    $('#skipBtn').classList.remove('hide');
     $('#nextBtn').classList.add('hide');
     $('#askAiBtn').classList.add('hide');
     startTimer();
@@ -852,7 +855,11 @@ function startTimer(){
 function stopTimer(){ if(S.timer){ clearInterval(S.timer); S.timer=null; } return Date.now()-S.qStart; }
 
 function submitAnswer(){
-  if(!S.sel.size){ toast('请先选择答案'); return; }
+  if(!S.sel.size){
+    const q=S.current;
+    if(q.options && q.options.length){ toast('请先选择答案'); return; }
+    skipQuestion(); return;   // 综合题无选项：直接看答案，避免卡死
+  }
   const q = S.current;
   const dt = stopTimer();
   const correct = isCorrect(q, S.sel);
@@ -926,30 +933,35 @@ function renderReport(q, correct){
   wrap.appendChild(tags);
   return wrap;
 }
-function showAnswered(q, correct, dt){
+function showAnswered(q, correct, dt, skip){
   const mm=String(Math.floor(dt/60000)).padStart(2,'0'); const ss=String(Math.floor(dt/1000)%60).padStart(2,'0');
   $('#pOpts').classList.add('locked');
   $$('#pOpts .opt').forEach(el=>{
     const k = el.dataset.k;
     const isAns = q.answer.includes(k);
     if(isAns) el.classList.add('right');
-    if(S.sel.has(k) && !isAns) el.classList.add('wrong');
+    if(!skip && S.sel.has(k) && !isAns) el.classList.add('wrong');
     if(q.type==='multiple' && !S.sel.has(k) && isAns) el.classList.add('right');
   });
   const banner = document.createElement('div');
-  banner.className = 'banner ' + (correct?'ok':'no');
-  banner.innerHTML = (correct? '✓ 回答正确' : '✗ 回答错误') + `　·　用时 ${mm}:${ss}` + (q.type==='multiple' && !correct ? '　·　多选须全部选对' : '');
+  if(skip){ banner.className='banner skip'; banner.innerHTML='⏭ 已跳过，看解析　·　用时 '+mm+':'+ss; }
+  else { banner.className = 'banner ' + (correct?'ok':'no'); banner.innerHTML = (correct? '✓ 回答正确' : '✗ 回答错误') + `　·　用时 ${mm}:${ss}` + (q.type==='multiple' && !correct ? '　·　多选须全部选对' : ''); }
   const ctx=document.createElement('div'); ctx.className='qctx'; ctx.textContent='📌 本题：第'+q.chapterIndex+'章 '+q.chapter+' · '+q.stem.slice(0,22)+(q.stem.length>22?'…':'');
   const exp = document.createElement('div'); exp.className='exp';
   exp.innerHTML = formatExp(q.explanation);
   const r = $('#pResult'); r.innerHTML=''; r.appendChild(banner); r.appendChild(ctx); r.appendChild(exp);
   const rep=renderReport(q, correct); if(rep) r.appendChild(rep);
   $('#submitBtn').classList.add('hide');
+  $('#skipBtn').classList.add('hide');
   const last = S.session.idx===S.session.queue.length-1;
   $('#nextBtn').textContent = last? '完成 ✦' : '下一题 →';
   $('#nextBtn').classList.remove('hide');
   $('#askAiBtn').classList.remove('hide');
   $('#askAiBtn')._q = q;
+}
+function skipQuestion(){
+  const q=S.current; const dt=stopTimer();
+  showAnswered(q, false, dt, true);   // 跳过=显示答案/解析，不计统计、不进错题本
 }
 function isCorrect(q, sel){
   if(q.type==='single') return sel.size===1 && sel.has(q.answer[0]);
@@ -983,6 +995,7 @@ function showSummary(tot, correct){
 }
 
 $('#submitBtn').addEventListener('click', submitAnswer);
+$('#skipBtn').addEventListener('click', skipQuestion);
 $('#nextBtn').addEventListener('click', nextQuestion);
 $('#prevBtn').addEventListener('click', ()=>{ if(S.session && S.session.idx>0){ S.session.idx--; renderQuestion(); }});
 $('#exitBtn').addEventListener('click', ()=>{ if(S.session){ showView('home'); initHome(); } });
