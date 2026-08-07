@@ -462,8 +462,8 @@
               <button class="tool-tab" id="calcTab">🧮 计算器</button>
               <button class="tool-tab" id="draftTab">📝 草稿</button>
               <span class="actions">
-                <button class="btn" id="submitBtn">提交</button>
                 <button class="btn ghost" id="skipBtn">跳过</button>
+                <button class="btn" id="submitBtn">提交</button>
                 <button class="btn hide" id="nextBtn">下一题 →</button>
                 <button class="btn ghost hide" id="askAiBtn">问 AI 这道题</button>
               </span>
@@ -745,7 +745,12 @@ function buildQueue(){
   if(chosenMode==='chapter'){
     const ci = parseInt($('#chapterSel').value,10);
     const t = $('#typeSeg').querySelector('.on').dataset.t;
-    ids = D().questions.filter(q=> q.chapterIndex===ci && (t==='all'||q.type===t)).map(q=>q.id);
+    const pq = S.stats.perQuestion || {};
+    const attempted = q => pq[q.id] && pq[q.id].attempts>0;
+    ids = D().questions
+      .filter(q=> q.chapterIndex===ci && (t==='all'||q.type===t))
+      .sort((a,b)=> (attempted(a)?1:0) - (attempted(b)?1:0))   // 没做过的题优先排前面
+      .map(q=>q.id);
   } else if(chosenMode==='random'){
     const n = Math.max(1, parseInt($('#randNum').value,10)||20);
     const t = $('#randTypeSeg').querySelector('.on').dataset.t;
