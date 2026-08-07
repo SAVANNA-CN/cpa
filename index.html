@@ -58410,7 +58410,7 @@ $('#apiParse').addEventListener('click', ()=>{
   if(n===0){ info.textContent='未识别到地址/Key/模型，请检查粘贴内容格式。'; info.style.color='var(--red)'; }
   else { info.textContent='已识别 '+n+' 项，请核对下方无误后点「保存」。'; info.style.color='var(--blue)'; }
 });
-$('#expAll').addEventListener('click', ()=> download('cpa_alldata.json', JSON.stringify({settings:S.settings, wrong:S.wrong, stats:S.stats, marks:S.marks, fav:S.fav, draftByQ:S.draftByQ, chat:chatMsgs})));
+$('#expAll').addEventListener('click', ()=> download('cpa_alldata.json', JSON.stringify({settings:S.settings, wrong:S.wrong, stats:S.stats, marks:S.marks, fav:S.fav, draftByQ:S.draftByQ, mastery:S.mastery, chat:chatMsgs})));
 /* 导入全部数据：与「导出全部数据」严格一对。合并而非覆盖——本地已有记录优先，文件仅补充缺失项。 */
 $('#impAll').addEventListener('click', ()=> $('#impAllFile').click());
 $('#impAllFile').addEventListener('change', e=>{
@@ -58421,11 +58421,12 @@ $('#impAllFile').addEventListener('change', e=>{
     if(!confirm('将把文件中的数据【合并】进当前设备（'+((SUBJECTS[S.subject]&&SUBJECTS[S.subject].name)||'会计')+'），已有错题/收藏/草稿/统计不会被覆盖，确定？')) return;
     // 键值型字段：以本地为准合并（本地优先，文件补缺失），绝不覆盖本地已有项
     const mergeMap=(cur, src)=>{ const m=Object.assign({}, src||{}); for(const k in cur) m[k]=cur[k]; return m; };
-    let nWrong=0,nFav=0,nMarks=0,nDraft=0;
+    let nWrong=0,nFav=0,nMarks=0,nDraft=0,nMastery=0;
     if(obj.wrong){ const m=mergeMap(S.wrong, obj.wrong); nWrong=Object.keys(m).length-Object.keys(S.wrong).length; S.wrong=m; }
     if(obj.fav){ const m=mergeMap(S.fav, obj.fav); nFav=Object.keys(m).length-Object.keys(S.fav).length; S.fav=m; }
     if(obj.marks){ const m=mergeMap(S.marks, obj.marks); nMarks=Object.keys(m).length-Object.keys(S.marks).length; S.marks=m; }
     if(obj.draftByQ){ const m=mergeMap(S.draftByQ, obj.draftByQ); nDraft=Object.keys(m).length-Object.keys(S.draftByQ).length; S.draftByQ=m; }
+    if(obj.mastery){ const m=mergeMap(S.mastery, obj.mastery); nMastery=Object.keys(m).length-Object.keys(S.mastery).length; S.mastery=m; }
     // 设置：本地优先
     if(obj.settings && typeof obj.settings==='object') S.settings=Object.assign({}, obj.settings, S.settings);
     // 统计：累加（同一文件勿在同设备重复导入，否则会重复累加）
@@ -58441,7 +58442,7 @@ $('#impAllFile').addEventListener('change', e=>{
     // 对话：追加去重
     if(Array.isArray(obj.chat) && obj.chat.length){ const seen=new Set(chatMsgs.map(m=>JSON.stringify(m))); let added=0; obj.chat.forEach(m=>{ const k=JSON.stringify(m); if(!seen.has(k)){ seen.add(k); chatMsgs.push(m); added++; } }); if(added) store.set('cpa_chat', chatMsgs); }
     save(); renderReview(); renderStats();
-    toast('已合并导入 ✔ 错题+'+nWrong+' 收藏+'+nFav+' 标记+'+nMarks+' 草稿+'+nDraft+(obj.chat&&obj.chat.length?' 对话已合并':''));
+    toast('已合并导入 ✔ 错题+'+nWrong+' 收藏+'+nFav+' 标记+'+nMarks+' 草稿+'+nDraft+' 掌握情况+'+nMastery+(obj.chat&&obj.chat.length?' 对话已合并':''));
   }catch(err){ toast('文件格式错误：请选择「导出全部数据」生成的 cpa_alldata.json'); } };
   rd.readAsText(f); e.target.value='';
 });
