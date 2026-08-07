@@ -296,6 +296,27 @@
   .report .fw .sep{background:none;color:#8a8175;padding:0 1px;}
   .report .tags{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;border-top:1px dashed var(--line);}
   .report .tags span{background:#e8f5ee;color:#1a7f4b;border:1px solid #bfe3cd;border-radius:14px;padding:2px 11px;font-size:12.3px;}
+  /* 记录本题掌握情况 弹窗 */
+  .mask{position:fixed;inset:0;background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px;animation:maskIn .15s ease;}
+  @keyframes maskIn{from{opacity:0}to{opacity:1}}
+  .mdialog{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);max-width:580px;width:100%;max-height:88vh;overflow:auto;padding:22px 22px 18px;}
+  .mhead{font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .mhead .x{border:none;background:var(--bg);color:var(--ink2);width:30px;height:30px;border-radius:9px;font-size:18px;cursor:pointer;line-height:1;flex:0 0 auto;}
+  .mhead .x:hover{background:var(--line);}
+  .msub{font-size:12.5px;color:var(--ink2);margin:8px 0 14px;line-height:1.55;}
+  .msub b{color:var(--ink);font-weight:600;}
+  .mopt{display:flex;gap:12px;align-items:flex-start;padding:13px 14px;border:1.5px solid var(--line);border-radius:14px;cursor:pointer;transition:.15s;margin-bottom:10px;background:var(--card);}
+  .mopt:hover{border-color:var(--blue);}
+  .mopt.on{border-color:var(--blue);background:var(--blue-soft);}
+  .mopt .box{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--line2);flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;margin-top:1px;transition:.15s;}
+  .mopt.on .box{background:var(--blue);border-color:var(--blue);}
+  .mopt .ot{font-size:15px;font-weight:600;}
+  .mopt .od{font-size:12.8px;color:var(--ink2);margin-top:3px;line-height:1.5;}
+  .mother{margin:-2px 0 12px;}
+  .mother textarea{width:100%;min-height:72px;padding:11px 13px;border:1px solid var(--line2);border-radius:12px;font-family:inherit;font-size:14px;line-height:1.5;resize:vertical;outline:none;background:#fff;color:var(--ink);box-sizing:border-box;}
+  .mother textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft);}
+  .mfoot{display:flex;gap:10px;justify-content:flex-end;margin-top:6px;}
+  .mhint{font-size:12px;color:var(--ink3);margin-right:auto;align-self:center;}
 </style>
 <script src="https://beacon.cdn.qq.com/sdk/4.5.9/beacon_web.min.js"></script>
 <script>
@@ -466,6 +487,7 @@
                 <button class="btn" id="submitBtn">提交</button>
                 <button class="btn hide" id="nextBtn">下一题 →</button>
                 <button class="btn ghost hide" id="askAiBtn">问 AI 这道题</button>
+                <button class="btn ghost hide" id="masteryBtn">记录本题掌握情况</button>
               </span>
             </div>
             <div class="tool-panel hide" id="calcPanel">
@@ -623,7 +645,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const SUBJECTS = const SUBJECTS = {
+const SUBJECTS = {
   "acc": {
     "name": "会计",
     "chapters": [
@@ -57648,6 +57670,7 @@ function loadSubjectState(){
   S.draftByQ = store.get('cpa_'+k+'_draftByQ', {});
   S.fav = store.get('cpa_'+k+'_fav', {});
   S.notes = store.get('cpa_'+k+'_notes', {});
+  S.mastery = store.get('cpa_'+k+'_mastery', {});
   S.session = store.get('cpa_'+k+'_session', null);
 }
 /* 切换科目：先保存当前科目，再切换并重建界面 */
@@ -57675,7 +57698,7 @@ function syncSubjUI(){
 loadSubjectState();
 const TYPE_LABEL = {single:'单选题', multiple:'多选题', calc:'计算题', comprehensive:'综合题', unknown:'未分类'};
 
-function save(){ const k=S.subject; store.set('cpa_settings', S.settings); store.set('cpa_'+k+'_wrong', S.wrong); store.set('cpa_'+k+'_stats', S.stats); store.set('cpa_'+k+'_marks', S.marks); store.set('cpa_'+k+'_draftByQ', S.draftByQ); store.set('cpa_'+k+'_fav', S.fav); store.set('cpa_'+k+'_notes', S.notes); if(S.session) store.set('cpa_'+k+'_session', S.session); }
+function save(){ const k=S.subject; store.set('cpa_settings', S.settings); store.set('cpa_'+k+'_wrong', S.wrong); store.set('cpa_'+k+'_stats', S.stats); store.set('cpa_'+k+'_marks', S.marks); store.set('cpa_'+k+'_draftByQ', S.draftByQ); store.set('cpa_'+k+'_fav', S.fav); store.set('cpa_'+k+'_notes', S.notes); store.set('cpa_'+k+'_mastery', S.mastery); if(S.session) store.set('cpa_'+k+'_session', S.session); }
 function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),1800); }
 
 /* ---------- navigation ---------- */
@@ -57838,6 +57861,7 @@ function renderQuestion(){
     $('#skipBtn').classList.remove('hide');
     $('#nextBtn').classList.add('hide');
     $('#askAiBtn').classList.add('hide');
+    $('#masteryBtn').classList.add('hide');
     startTimer();
   }
   save();
@@ -57962,6 +57986,12 @@ function showAnswered(q, correct, dt, skip){
   $('#nextBtn').classList.remove('hide');
   $('#askAiBtn').classList.remove('hide');
   $('#askAiBtn')._q = q;
+  const mb = $('#masteryBtn');
+  if(q.type==='single' || q.type==='multiple'){
+    mb.classList.remove('hide'); mb._q = q;
+    const rec = S.mastery[q.id];
+    mb.textContent = rec ? '掌握情况已记录 ✎' : '记录本题掌握情况';
+  } else { mb.classList.add('hide'); mb._q = null; }
 }
 function skipQuestion(){
   const q=S.current; const dt=stopTimer();
@@ -57993,7 +58023,7 @@ function showSummary(tot, correct){
   $('#pOpts').innerHTML=''; $('#pOpts').classList.remove('locked');
   r.innerHTML = `<div class="banner ok">本组共 ${tot} 题　·　全对 ${correct} 题　·　正确率 ${acc}%</div>
     <div class="pfoot" style="margin-top:16px;"><button class="btn" id="backHome">返回首页</button><button class="btn sec" id="again">再来一组</button></div>`;
-  $('#submitBtn').classList.add('hide'); $('#nextBtn').classList.add('hide'); $('#askAiBtn').classList.add('hide'); $('#prevBtn').disabled=true;
+  $('#submitBtn').classList.add('hide'); $('#nextBtn').classList.add('hide'); $('#askAiBtn').classList.add('hide'); $('#masteryBtn').classList.add('hide'); $('#prevBtn').disabled=true;
   $('#backHome').addEventListener('click', ()=>{ S.session=null; showView('home'); initHome(); });
   $('#again').addEventListener('click', ()=>{ if(chosenMode) startSession(); });
 }
@@ -58284,6 +58314,65 @@ $('#cemClose').addEventListener('click', ()=>{ $('#chatText').value=$('#cemText'
 $('#cemMask').addEventListener('click', ()=>{ $('#chatText').value=$('#cemText').value; $('#chatExpandModal').classList.add('hide'); autoGrow($('#chatText')); });
 $('#cemSend').addEventListener('click', ()=>{ $('#chatText').value=$('#cemText').value; $('#chatExpandModal').classList.add('hide'); autoGrow($('#chatText')); chatSend(); });
 
+/* ---------- 记录本题掌握情况 ---------- */
+const MASTERY_OPTS = [
+  {key:'不会/没学过', desc:'这个知识点我没有掌握，或者已经忘记规则。'},
+  {key:'不确定，靠猜或排除', desc:'答案选对了，但自己没有明确依据；靠感觉或排除法碰巧做对。'},
+  {key:'知识点记混了', desc:'知道相关知识，但不同知识点、规则或条件混淆。'},
+  {key:'理解了，会分析', desc:'真正理解该知识点，能解释为什么选该答案、其他选项为什么错。'},
+  {key:'粗心/审题问题', desc:'知识点和解题方法基本掌握，但因执行错误（漏看关键词/看错要求/算错）导致错误。'},
+  {key:'其他', desc:'用户自定义补充原因。', other:true}
+];
+function closeMastery(){ const m=document.getElementById('masteryMask'); if(m) m.remove(); }
+function openMastery(q){
+  closeMastery();
+  const rec = S.mastery[q.id] || {reasons:[], other_note:''};
+  const sel = new Set(rec.reasons||[]);
+  const mask = document.createElement('div'); mask.className='mask'; mask.id='masteryMask';
+  const sub = '第'+q.chapterIndex+'章 '+q.chapter+' · '+escapeHtml(q.stem.slice(0,30))+(q.stem.length>30?'…':'');
+  const optsHtml = MASTERY_OPTS.map((o,i)=>{
+    const on = sel.has(o.key);
+    return '<div class="mopt'+(on?' on':'')+'" data-i="'+i+'">'
+      +'<div class="box">'+(on?'✓':'')+'</div>'
+      +'<div class="grow"><div class="ot">'+escapeHtml(o.key)+'</div><div class="od">'+escapeHtml(o.desc)+'</div></div>'
+      +'</div>';
+  }).join('');
+  mask.innerHTML = '<div class="mdialog">'
+    +'<div class="mhead"><span>记录本题掌握情况</span><button class="x" id="mClose" title="关闭">×</button></div>'
+    +'<div class="msub"><b>'+sub+'</b><br>用于复盘你的真实掌握程度：不仅记录错题，也记录做对的题（可能蒙对/排除法/理解不牢）。不强制，可多选，也可一项都不选直接保存。</div>'
+    +'<div id="mOpts">'+optsHtml+'</div>'
+    +'<div class="mother hide" id="mOther"><textarea id="mOtherArea" placeholder="请输入其他原因"></textarea></div>'
+    +'<div class="mfoot"><span class="mhint">已选 <b id="mCount">'+sel.size+'</b> 项</span><button class="btn sec" id="mCancel">取消</button><button class="btn" id="mSave">保存</button></div>'
+    +'</div>';
+  document.body.appendChild(mask);
+  const otherWrap = mask.querySelector('#mOther');
+  const otherArea = mask.querySelector('#mOtherArea');
+  if(sel.has('其他')){ otherWrap.classList.remove('hide'); otherArea.value = rec.other_note||''; }
+  const refresh = ()=>{
+    let n=0;
+    mask.querySelectorAll('.mopt').forEach(el=>{ if(el.classList.contains('on')) n++; });
+    mask.querySelector('#mCount').textContent = n;
+    const showOther = !!mask.querySelector('.mopt[data-i="5"]').classList.contains('on');
+    otherWrap.classList.toggle('hide', !showOther);
+  };
+  mask.querySelectorAll('.mopt').forEach(el=>{
+    el.addEventListener('click', ()=>{ el.classList.toggle('on'); el.querySelector('.box').textContent = el.classList.contains('on')?'✓':''; refresh(); });
+  });
+  mask.querySelector('#mClose').addEventListener('click', closeMastery);
+  mask.querySelector('#mCancel').addEventListener('click', closeMastery);
+  mask.addEventListener('click', e=>{ if(e.target===mask) closeMastery(); });
+  mask.querySelector('#mSave').addEventListener('click', ()=>{
+    const reasons=[];
+    mask.querySelectorAll('.mopt.on').forEach(el=>{ reasons.push(MASTERY_OPTS[+el.dataset.i].key); });
+    const rec2 = {reasons:reasons, other_note:'', ts:Date.now()};
+    if(reasons.includes('其他')) rec2.other_note = (otherArea.value||'').trim();
+    S.mastery[q.id] = rec2; save();
+    closeMastery();
+    const mb=$('#masteryBtn'); if(mb && mb._q && mb._q.id===q.id){ mb.textContent='掌握情况已记录 ✎'; }
+    toast(reasons.length? '已记录掌握情况' : '已保存（未选择任何原因）');
+  });
+}
+$('#masteryBtn').addEventListener('click', ()=>{ const q=$('#masteryBtn')._q; if(q) openMastery(q); });
 /* ---------- settings ---------- */
 const DEF_NAME = '高大上的注册会计师';
 function initSettings(){
