@@ -325,6 +325,31 @@
   .mother textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft);}
   .mfoot{display:flex;gap:10px;justify-content:flex-end;margin-top:6px;}
   .mhint{font-size:12px;color:var(--ink3);margin-right:auto;align-self:center;}
+  /* 主要原因选择器 */
+  .msec{margin:12px 0 4px;padding:12px 14px;border:1.5px dashed var(--line2);border-radius:14px;background:var(--bg);}
+  .msech{font-size:12px;color:var(--ink2);margin-bottom:8px;}
+  .mradio{display:flex;gap:10px;align-items:center;padding:9px 12px;border:1.5px solid var(--line);border-radius:11px;cursor:pointer;margin-bottom:8px;background:var(--card);transition:.15s;}
+  .mradio.on{border-color:var(--blue);background:var(--blue-soft);}
+  .mradio .rbox{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line2);flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--blue);}
+  .mradio .rt{font-size:13.5px;color:var(--ink);}
+  /* 诊断模块 */
+  .dtotal{text-align:right;font-size:12px;color:var(--ink3);margin-top:8px;}
+  .kpcard{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px;background:var(--card);}
+  .kpcard h3{margin:0 0 8px;font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .kphist{display:flex;flex-direction:column;gap:6px;}
+  .khrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;}
+  .khdate{color:var(--ink3);flex:0 0 auto;min-width:42px;}
+  .kptag{display:inline-block;padding:2px 9px;border-radius:11px;font-size:11.5px;border:1px solid transparent;}
+  .kp-r0{background:#ffeceb;color:#c0332b;border-color:#ffd2cf;}
+  .kp-r1{background:#fff2e0;color:#b8700a;border-color:#ffe0b0;}
+  .kp-r2{background:#f6eaff;color:#7d33b0;border-color:#e7cdf5;}
+  .kp-r3{background:#e7f8ee;color:#1a7f4b;border-color:#bfe3cd;}
+  .kp-r4{background:#e6f1ff;color:#0a5bbf;border-color:#c3dcff;}
+  .kp-r5{background:#f0f0f2;color:#5b5b60;border-color:#e0e0e4;}
+  .trend{display:flex;align-items:flex-end;gap:10px;height:170px;padding:10px 4px 0;overflow-x:auto;}
+  .tcol{flex:1 0 56px;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end;min-width:56px;}
+  .tbar{width:100%;max-width:54px;background:linear-gradient(180deg,#34c759,#1a9c52);border-radius:8px 8px 0 0;display:flex;align-items:flex-start;justify-content:center;color:#fff;font-size:11px;font-weight:600;padding-top:4px;min-height:6px;transition:height .3s;}
+  .tlbl{font-size:11px;color:var(--ink3);margin-top:6px;text-align:center;}
 </style>
 <script src="https://beacon.cdn.qq.com/sdk/4.5.9/beacon_web.min.js"></script>
 <script>
@@ -563,7 +588,7 @@
     <!-- STATS -->
     <section class="view" id="view-stats">
       <h1 class="h">学习统计</h1>
-      <p class="sub">基于本设备做题记录</p>
+      <p class="sub">全设备统一学习画像 · 完全离线运行</p>
       <div class="statgrid">
         <div class="stat"><div class="v" id="sAns">0</div><div class="l">已作答</div></div>
         <div class="stat"><div class="v" id="sAcc" style="color:var(--green);">0%</div><div class="l">正确率</div></div>
@@ -575,19 +600,32 @@
         <div id="sBars"></div>
       </div>
 
-      <!-- 掌握情况分析（原「掌握分析」页，已合并进统计页） -->
-      <h1 class="h" style="margin-top:26px;">掌握情况分析</h1>
-      <p class="sub">基于本设备做题记录与「记录本题掌握情况」复盘</p>
-      <div class="statgrid" id="mOverview"></div>
+      <!-- 学习诊断分析（离线 CPA 个人学习诊断系统） -->
+      <h1 class="h" style="margin-top:26px;">学习诊断分析</h1>
+      <p class="sub">跨设备统一 · 全量学习行为诊断 · 完全离线</p>
+
       <div class="card">
-        <h4 style="margin:0 0 12px;font-size:14px;">掌握原因总分布</h4>
-        <div id="mReasonBars"></div>
-        <p class="md" style="color:var(--ink2);font-size:12px;margin:10px 0 0;">说明：一道题可勾选多个原因，所以各原因占比之和可能大于 100%。「其他」含自定义的补充说明。</p>
+        <h4 style="margin:0 0 4px;font-size:14px;">模块一 · 我的主要问题分布</h4>
+        <p class="md" style="color:var(--ink2);font-size:12px;margin:0 0 12px;">只统计每道题的「主要原因」，合计 100%。</p>
+        <div id="dMod1"></div>
       </div>
+
       <div class="card">
-        <h4 style="margin:0 0 6px;font-size:14px;">按章节掌握分析</h4>
-        <p class="md" style="color:var(--ink2);font-size:12px;margin:0 0 14px;">每章展示答题量、正确率、平均用时，以及你记录的掌握原因分布与薄弱点提示。</p>
-        <div id="mChapters"></div>
+        <h4 style="margin:0 0 4px;font-size:14px;">模块二 · 章节掌握情况（薄弱优先）</h4>
+        <p class="md" style="color:var(--ink2);font-size:12px;margin:0 0 12px;">问题比例 = 该章有错误作答的题目数 ÷ 该章练习题目总数。优先展示高问题比例章节。</p>
+        <div id="dMod2"></div>
+      </div>
+
+      <div class="card">
+        <h4 style="margin:0 0 4px;font-size:14px;">模块三 · 知识点漏洞地图</h4>
+        <p class="md" style="color:var(--ink2);font-size:12px;margin:0 0 12px;">以知识点为最小分析单位，展示练习次数与历史变化（使用全部原因记录）。</p>
+        <div id="dMod3"></div>
+      </div>
+
+      <div class="card">
+        <h4 style="margin:0 0 4px;font-size:14px;">模块四 · 掌握变化趋势</h4>
+        <p class="md" style="color:var(--ink2);font-size:12px;margin:0 0 12px;">按时间观察你从「不会」到「理解，会分析」的进步轨迹。</p>
+        <div id="dMod4"></div>
       </div>
     </section>
 
@@ -685,6 +723,26 @@ const S = {
 };
 /* 当前科目题库（选择题/章节都从这里取，保证会计与经济法完全隔离） */
 function D(){ return SUBJECTS[S.subject]; }
+/* 知识点：取报告标签首项，无标签则回退到章名（作为最小分析单位） */
+function kpOf(q){ const t=(q&&q.report&&q.report.tags)||[]; return t.length?t[0]:('第'+(q?q.chapterIndex:'?')+'章'); }
+/* 稳定设备标识：持久化在 localStorage，用于跨设备导入去重 */
+function deviceId(){ let d=store.get('cpa_device_id',''); if(!d){ d='dev-'+Math.random().toString(36).slice(2,10)+Date.now().toString(36); store.set('cpa_device_id',d); } return d; }
+/* 答题记录去重主键：设备+题号+作答时间戳，保证同一记录重复导入不会重复 */
+function ridOf(qid, ts){ return deviceId()+':'+qid+':'+ts; }
+/* 由统一历史重算 S.stats（根治导入累计重复：导入后重算而非累加） */
+function recomputeStats(){
+  const k=S.subject;
+  const st={answered:0, correct:0, timeMs:0, perChapter:{}, perQuestion:{}};
+  (S.history||[]).forEach(r=>{
+    if(r.correct===null||r.correct===undefined) return; // 跳过仅记录掌握、未作答的迁移记录
+    st.answered++; if(r.correct) st.correct++; st.timeMs+=(r.timeMs||0);
+    const pq=st.perQuestion[r.qid]||(st.perQuestion[r.qid]={attempts:0,correct:0,timeMs:0});
+    pq.attempts++; if(r.correct) pq.correct++; pq.timeMs+=(r.timeMs||0);
+    const pc=st.perChapter[r.ci]||(st.perChapter[r.ci]={name:qById(r.qid)?qById(r.qid).chapter:'',answered:0,correct:0,timeMs:0});
+    pc.answered++; if(r.correct) pc.correct++; pc.timeMs+=(r.timeMs||0);
+  });
+  S.stats=st; save();
+}
 /* 按当前科目从 localStorage 载入该科目的错题/收藏/统计/草稿/进度 */
 function loadSubjectState(){
   const k = S.subject;
@@ -695,7 +753,26 @@ function loadSubjectState(){
   S.fav = store.get('cpa_'+k+'_fav', {});
   S.notes = store.get('cpa_'+k+'_notes', {});
   S.mastery = store.get('cpa_'+k+'_mastery', {});
+  S.history = store.get('cpa_'+k+'_history', []) || [];
   S.session = store.get('cpa_'+k+'_session', null);
+  // 旧版数据迁移：把历史作答(S.stats.perQuestion)与掌握记录(S.mastery)合成为统一历史轨迹
+  if(!S.history.length && ((S.stats.perQuestion && Object.keys(S.stats.perQuestion).length) || (S.mastery && Object.keys(S.mastery).length))){
+    const now=Date.now(); let i=0;
+    const add=(rec)=>{ S.history.push(rec); i++; };
+    // 1) 历史作答（来自旧的累计统计）：用于章节练习/问题比例
+    const pq=S.stats.perQuestion||{};
+    Object.keys(pq).forEach(id=>{
+      const r=pq[id]; if(!r) return; const q=qById(Number(id));
+      add({ rid:deviceId()+':'+id+':p'+(r.ts||now)+i, qid:Number(id), ci:q?q.chapterIndex:0, kp:q?kpOf(q):'第?章', type:q?q.type:'single', ts:(r.ts||now)-i*1000, dev:deviceId(), userAns:[], correctAns:q?(q.answer||[]):[], correct:((r.correct||0)>0), timeMs:r.timeMs||0, mastery:null });
+    });
+    // 2) 掌握情况记录（来自旧的 mastery）：用于主要原因/知识点/趋势
+    const mrec=S.mastery||{};
+    Object.keys(mrec).forEach(id=>{
+      const rec=mrec[id]; if(!rec) return; const q=qById(Number(id)); const rs=rec.reasons||[];
+      add({ rid:deviceId()+':'+id+':m'+(rec.ts||now)+i, qid:Number(id), ci:q?q.chapterIndex:0, kp:q?kpOf(q):'第?章', type:q?q.type:'single', ts:rec.ts||now, dev:deviceId(), userAns:[], correctAns:q?(q.answer||[]):[], correct:null, mastery:{reasons:rs, main:(rs.length===1?rs[0]:''), other:rec.other_note||''} });
+    });
+    if(i) store.set('cpa_'+k+'_history', S.history);
+  }
 }
 /* 切换科目：先保存当前科目，再切换并重建界面 */
 function switchSubject(s){
@@ -722,7 +799,7 @@ function syncSubjUI(){
 loadSubjectState();
 const TYPE_LABEL = {single:'单选题', multiple:'多选题', calc:'计算题', comprehensive:'综合题', unknown:'未分类'};
 
-function save(){ const k=S.subject; store.set('cpa_settings', S.settings); store.set('cpa_'+k+'_wrong', S.wrong); store.set('cpa_'+k+'_stats', S.stats); store.set('cpa_'+k+'_marks', S.marks); store.set('cpa_'+k+'_draftByQ', S.draftByQ); store.set('cpa_'+k+'_fav', S.fav); store.set('cpa_'+k+'_notes', S.notes); store.set('cpa_'+k+'_mastery', S.mastery); if(S.session) store.set('cpa_'+k+'_session', S.session); }
+function save(){ const k=S.subject; store.set('cpa_settings', S.settings); store.set('cpa_'+k+'_wrong', S.wrong); store.set('cpa_'+k+'_stats', S.stats); store.set('cpa_'+k+'_marks', S.marks); store.set('cpa_'+k+'_draftByQ', S.draftByQ); store.set('cpa_'+k+'_fav', S.fav); store.set('cpa_'+k+'_notes', S.notes); store.set('cpa_'+k+'_mastery', S.mastery); store.set('cpa_'+k+'_history', S.history); if(S.session) store.set('cpa_'+k+'_session', S.session); }
 function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),1800); }
 
 /* ---------- navigation ---------- */
@@ -945,6 +1022,9 @@ function submitAnswer(){
   if(!correct){
     S.wrong[q.id] = {id:q.id, type:q.type, chapter:q.chapter, chapterIndex:q.chapterIndex, attempts:(S.wrong[q.id]?.attempts||0)+1, lastWrongTs:Date.now()};
   }
+  // 历史答题记录：每条作答追加一条，不覆盖旧数据（统一分析 / 跨设备去重的基础）
+  const now = Date.now();
+  S.history.push({ rid:ridOf(q.id, now), qid:q.id, ci:q.chapterIndex, kp:kpOf(q), type:q.type, ts:now, dev:deviceId(), userAns:[...S.sel], correctAns:[...q.answer], correct:correct, timeMs:dt, mastery:null });
   S.session.results[S.session.idx] = correct;
   S.session.answers[S.session.idx] = [...S.sel];
   S.session.times[S.session.idx] = dt;
@@ -1154,15 +1234,12 @@ function renderStats(){
       bars.appendChild(el);
     });
   }
-  renderMastery();
+  renderDiagnosis();
 }
 
 /* ---------- 章节掌握分析 ---------- */
-function renderMastery(){
+function renderDiagnosis(){
   const SUB = D();
-  const mrec = S.mastery || {};
-  const pq = S.stats.perQuestion || {};
-  const pc = S.stats.perChapter || {};
   const REASONS = [
     {key:'不会/没学过',      color:'#ff3b30'},
     {key:'不确定，靠猜或排除', color:'#ff9500'},
@@ -1171,97 +1248,106 @@ function renderMastery(){
     {key:'粗心/审题问题',     color:'#0071e3'},
     {key:'其他',             color:'#8e8e93'}
   ];
-  const WEAK = new Set(['不会/没学过','不确定，靠猜或排除','知识点记混了']);
+  const hist = S.history || [];
+  const byQid = {};
+  hist.forEach(r=>{ (byQid[r.qid] || (byQid[r.qid]=[])).push(r); });
 
-  const byCh = {};
-  let totalRecs = 0, weakRecs = 0, stableRecs = 0, unstableCorrect = 0;
-  const reasonTotals = {}; REASONS.forEach(r=>reasonTotals[r.key]=0);
-  Object.keys(mrec).forEach(id=>{
-    const rec = mrec[id]; if(!rec) return;
-    const q = qById(Number(id)); if(!q) return;
-    const ci = q.chapterIndex;
-    if(!byCh[ci]) byCh[ci] = {reasonCount:{}, total:0, name:q.chapter};
-    byCh[ci].total++; totalRecs++;
-    (rec.reasons||[]).forEach(rk=>{
-      byCh[ci].reasonCount[rk] = (byCh[ci].reasonCount[rk]||0)+1;
-      reasonTotals[rk] = (reasonTotals[rk]||0)+1;
-    });
-    const weak = (rec.reasons||[]).some(rk=>WEAK.has(rk));
-    if(weak) weakRecs++;
-    if((rec.reasons||[]).length===1 && rec.reasons[0]==='理解了，会分析') stableRecs++;
-    const qd = pq[id];
-    if(weak && qd && qd.correct>0) unstableCorrect++;
+  /* 模块一：我的主要问题分布（仅统计每题最新主要原因，合计 100%） */
+  const mainCount = {}; REASONS.forEach(r=>mainCount[r.key]=0);
+  let mainTotal=0;
+  Object.keys(byQid).forEach(qid=>{
+    let last=null;
+    for(let i=byQid[qid].length-1;i>=0;i--){ if(byQid[qid][i].mastery && byQid[qid][i].mastery.main){ last=byQid[qid][i].mastery; break; } }
+    if(last && last.main){ mainCount[last.main]++; mainTotal++; }
   });
-
-  const ov = $('#mOverview'); ov.innerHTML='';
-  const ovDefs = [
-    {v:totalRecs, l:'已记录掌握情况', c:''},
-    {v:weakRecs, l:'标记薄弱', c:'var(--red)'},
-    {v:stableRecs, l:'稳定已掌握', c:'var(--green)'},
-    {v:unstableCorrect, l:'做对但不稳定', c:'#ff9500'}
-  ];
-  ovDefs.forEach(d=>{
-    const el=document.createElement('div'); el.className='stat';
-    const sa = d.c? ' style="color:'+d.c+'"':'';
-    el.innerHTML='<div class="v"'+sa+'>'+d.v+'</div><div class="l">'+d.l+'</div>';
-    ov.appendChild(el);
-  });
-
-  const rb = $('#mReasonBars'); rb.innerHTML='';
-  if(!totalRecs){ rb.innerHTML='<p class="md" style="color:var(--ink2)">还没有记录。去练习时，每道选择题提交后点「记录本题掌握情况」即可生成复盘数据。</p>'; }
+  const d1=$('#dMod1'); d1.innerHTML='';
+  if(!mainTotal){ d1.innerHTML='<p class="md" style="color:var(--ink2)">还没有记录「主要原因」。提交题目后点「记录本题掌握情况」，勾选原因并指定主要原因，这里会生成你的主要问题分布（合计 100%）。</p>'; }
   else {
     REASONS.forEach(r=>{
-      const c = reasonTotals[r.key]||0; if(c===0) return;
-      const pct = Math.round(c/totalRecs*100);
+      const c=mainCount[r.key]; if(!c) return;
+      const pct=Math.round(c/mainTotal*100);
       const el=document.createElement('div'); el.className='barrow';
-      el.innerHTML='<div class="nm" title="'+escapeHtml(r.key)+'" style="width:150px;flex-basis:150px;color:var(--ink);font-weight:500;">'+escapeHtml(r.key)+'</div>'
-        +'<div class="track"><i style="width:'+pct+'%;background:'+r.color+'"></i></div>'
-        +'<div class="pc" style="width:88px;flex-basis:88px;">'+c+' 次 · '+pct+'%</div>';
-      rb.appendChild(el);
+      el.innerHTML='<div class="nm" style="width:150px;flex-basis:150px;color:var(--ink);font-weight:500;" title="'+escapeHtml(r.key)+'">'+escapeHtml(r.key)+'</div><div class="track"><i style="width:'+pct+'%;background:'+r.color+'"></i></div><div class="pc" style="width:120px;flex-basis:120px;">'+pct+'% · '+c+'题</div>';
+      d1.appendChild(el);
+    });
+    const tot=document.createElement('div'); tot.className='dtotal'; tot.textContent='合计 100% · 共 '+mainTotal+' 题含主要原因'; d1.appendChild(tot);
+  }
+
+  /* 模块二：章节掌握情况（问题题数 ÷ 练习题数，薄弱优先） */
+  const d2=$('#dMod2'); d2.innerHTML='';
+  const chMap={};
+  hist.forEach(r=>{
+    if(r.correct===null||r.correct===undefined) return;
+    const ci=r.ci; if(!chMap[ci]) chMap[ci]={practice:new Set(),problem:new Set(),name:(qById(r.qid)?qById(r.qid).chapter:'第'+ci+'章')};
+    chMap[ci].practice.add(r.qid);
+    if(!r.correct) chMap[ci].problem.add(r.qid);
+  });
+  const chRows=Object.keys(chMap).map(ci=>({ci:Number(ci),name:chMap[ci].name,practice:chMap[ci].practice.size,problem:chMap[ci].problem.size})).filter(x=>x.practice>0);
+  chRows.sort((a,b)=> (b.problem/b.practice)-(a.problem/a.practice) || b.practice-a.practice);
+  if(!chRows.length){ d2.innerHTML='<p class="md" style="color:var(--ink2)">还没有做题记录，去练习后这里会按章节展示薄弱情况。</p>'; }
+  else {
+    chRows.forEach(x=>{
+      const pct=Math.round(x.problem/x.practice*100);
+      const el=document.createElement('div'); el.className='barrow';
+      el.innerHTML='<div class="nm" style="width:200px;flex-basis:200px;color:var(--ink);font-weight:500;" title="'+escapeHtml(x.name)+'">第'+x.ci+'章 '+escapeHtml(x.name)+'</div><div class="track"><i style="width:'+pct+'%;background:'+(pct>=50?'#ff3b30':pct>=30?'#ff9500':'#34c759')+';"></i></div><div class="pc" style="width:170px;flex-basis:170px;">问题比例 '+pct+'% · 练习'+x.practice+'题</div>';
+      d2.appendChild(el);
     });
   }
 
-  const mc = $('#mChapters'); mc.innerHTML='';
-  let anyCh=false;
-  SUB.chapters.slice().sort((a,b)=>a.index-b.index).forEach(ch=>{
-    const ci = ch.index;
-    const c = pc[ci];
-    const answered = c?c.answered||0:0;
-    const correct = c?c.correct||0:0;
-    const timeMs = c?c.timeMs||0:0;
-    const bc = byCh[ci];
-    const mcount = bc?bc.total||0:0;
-    if(answered===0 && mcount===0) return;
-    anyCh=true;
-    const acc = answered? Math.round(correct/answered*100):0;
-    const avg = answered? Math.round(timeMs/answered/1000):0;
-    const card=document.createElement('div'); card.className='mchap';
-    let html='<h3>第'+ci+'章 '+escapeHtml(ch.name)+' '+(mcount? '<span class="pill">'+mcount+' 份复盘</span>':'<span class="pill" style="background:var(--bg);color:var(--ink3)">未复盘</span>')+'</h3>';
-    html+='<div class="csc">答题 <b>'+answered+'</b> 题 · 正确率 <b>'+acc+'%</b> · 平均 <b>'+avg+'s</b></div>';
-    if(mcount){
-      html+='<div style="margin:4px 0 2px;">';
-      REASONS.forEach(r=>{
-        const cc = (bc.reasonCount[r.key]||0); if(!cc) return;
-        const pct = Math.round(cc/mcount*100);
-        html+='<div class="barrow" style="margin:5px 0;">'
-          +'<div class="nm" style="width:118px;flex-basis:118px;color:var(--ink2);font-size:12px;">'+escapeHtml(r.key)+'</div>'
-          +'<div class="track"><i style="width:'+pct+'%;background:'+r.color+'"></i></div>'
-          +'<div class="pc" style="width:72px;flex-basis:72px;font-size:12px;">'+cc+' · '+pct+'%</div>'
-          +'</div>';
+  /* 模块三：知识点漏洞地图（以知识点为最小单位，使用全部原因记录） */
+  const d3=$('#dMod3'); d3.innerHTML='';
+  const kpMap={};
+  hist.forEach(r=>{
+    if(!r.mastery || !r.mastery.reasons || !r.mastery.reasons.length) return;
+    const kp=r.kp||'未分类';
+    if(!kpMap[kp]) kpMap[kp]={count:0,recs:[]};
+    kpMap[kp].count++;
+    kpMap[kp].recs.push({ts:r.ts,reasons:r.mastery.reasons,main:r.mastery.main});
+  });
+  const kpKeys=Object.keys(kpMap).sort((a,b)=>kpMap[b].count-kpMap[a].count);
+  if(!kpKeys.length){ d3.innerHTML='<p class="md" style="color:var(--ink2)">还没有记录掌握情况，无法生成知识点漏洞地图。</p>'; }
+  else {
+    kpKeys.slice(0,40).forEach(kp=>{
+      const o=kpMap[kp];
+      const card=document.createElement('div'); card.className='kpcard';
+      let html='<h3>'+escapeHtml(kp)+' <span class="pill">练习 '+o.count+' 次</span></h3>';
+      const recs=o.recs.slice().sort((a,b)=>a.ts-b.ts).slice(-6);
+      html+='<div class="kphist">';
+      recs.forEach(rc=>{
+        const d=new Date(rc.ts); const ds=(d.getMonth()+1)+'/'+d.getDate();
+        const tags=rc.reasons.map(rk=>'<span class="kptag kp-'+reasonClass(rk)+'">'+escapeHtml(rk)+'</span>').join('');
+        html+='<div class="khrow"><span class="khdate">'+ds+'</span>'+tags+'</div>';
       });
       html+='</div>';
-      const weakCounts={};
-      Object.keys(bc.reasonCount).forEach(k=>{ if(WEAK.has(k)||k==='粗心/审题问题') weakCounts[k]=bc.reasonCount[k]; });
-      const tip = masteryTip(weakCounts, bc.reasonCount['理解了，会分析']||0, mcount);
-      if(tip) html+='<div class="mtip">'+tip+'</div>';
-    } else {
-      html+='<div class="mtip">本章还没记录掌握情况。做完题点「记录本题掌握情况」即可生成复盘与薄弱点提示。</div>';
-    }
-    card.innerHTML=html;
-    mc.appendChild(card);
-  });
-  if(!anyCh){ mc.innerHTML='<p class="md" style="color:var(--ink2)">还没有做题记录，去练习后这里会按章节展示掌握情况。</p>'; }
+      card.innerHTML=html; d3.appendChild(card);
+    });
+  }
+
+  /* 模块四：掌握变化趋势（按时间，观察从不会→理解） */
+  const d4=$('#dMod4'); d4.innerHTML='';
+  const trendRecs=hist.filter(r=>r.mastery&&r.mastery.main).map(r=>({ts:r.ts, main:r.mastery.main}));
+  if(!trendRecs.length){ d4.innerHTML='<p class="md" style="color:var(--ink2)">还没有「主要原因」记录，无法展示趋势。记录掌握情况后这里会显示你从「不会」到「理解，会分析」的进步轨迹。</p>'; }
+  else {
+    trendRecs.sort((a,b)=>a.ts-b.ts);
+    const BUCKET=8;
+    const buckets=[];
+    for(let i=0;i<trendRecs.length;i+=BUCKET) buckets.push(trendRecs.slice(i,i+BUCKET));
+    let html='<div class="trend">';
+    buckets.forEach((b,n)=>{
+      const understood=b.filter(x=>x.main==='理解了，会分析').length;
+      const pct=Math.round(understood/b.length*100);
+      const label = n===0?'前期':(n===buckets.length-1?'近期':'');
+      html+='<div class="tcol"><div class="tbar" style="height:'+Math.max(pct,4)+'%"><span class="tval">'+pct+'%</span></div><div class="tlbl">'+(label||('第'+(n+1)+'段'))+'</div></div>';
+    });
+    html+='</div>';
+    const first=trendRecs[0].main, last=trendRecs[trendRecs.length-1].main;
+    const LEVEL={'不会/没学过':0,'知识点记混了':1,'不确定，靠猜或排除':2,'理解了，会分析':3,'粗心/审题问题':2,'其他':2};
+    const improved=(LEVEL[last]||0)>(LEVEL[first]||0);
+    html+='<p class="md" style="color:var(--ink2);margin-top:10px;">最早记录主因为「'+escapeHtml(first)+'」，最近一次为「'+escapeHtml(last)+'」——'+(improved?'整体呈进步趋势 ✅':'继续加油，保持复盘 💪')+'。柱高为「理解了，会分析」占比。</p>';
+    d4.innerHTML=html;
+  }
 }
+function reasonClass(k){ return ({'不会/没学过':'r0','不确定，靠猜或排除':'r1','知识点记混了':'r2','理解了，会分析':'r3','粗心/审题问题':'r4','其他':'r5'})[k]||'r5'; }
 function masteryTip(weakCounts, understood, mcount){
   const entries = Object.entries(weakCounts).sort((a,b)=>b[1]-a[1]);
   if(entries.length){
@@ -1431,7 +1517,10 @@ async function chatSend(){
   const messages = chatMsgs.map(x=>({role:x.role==='sys'?'system':x.role, content:x.text})).filter(x=>x.role!=='system' || true);
   // system prompt
   const subjName = (SUBJECTS[S.subject] && SUBJECTS[S.subject].name) || '会计';
-  const sys = {role:'system', content:'你是一位严谨、耐心、善于用中文讲解的注册会计师(CPA)'+subjName+'考试辅导老师。结合'+subjName+'考试的知识点和例题，帮助学生理解知识点。回答要简明、有条理。'};
+  let sysContent='你是一位严谨、耐心、善于用中文讲解的注册会计师(CPA)'+subjName+'考试辅导老师。结合'+subjName+'考试的知识点和例题，帮助学生理解知识点。回答要简明、有条理。';
+  const diag=buildDiagnosisSummary();
+  if(diag && (S.history||[]).length) sysContent+='\n\n以下是该学生在本机/跨设备统一学习数据库中的离线诊断摘要（真实做题与掌握情况记录，非示例），可用于针对性给出薄弱章节与复习建议：\n'+diag;
+  const sys = {role:'system', content:sysContent};
   const payload = {model:S.settings.model||'gpt-4o-mini', messages:[sys, ...messages.filter(x=>x.role!=='system')], stream:true, temperature:0.6};
   try{
     const resp = await fetch(S.settings.apiBase.replace(/\/$/,'')+'/chat/completions', {
@@ -1487,8 +1576,9 @@ const MASTERY_OPTS = [
 function closeMastery(){ const m=document.getElementById('masteryMask'); if(m) m.remove(); }
 function openMastery(q){
   closeMastery();
-  const rec = S.mastery[q.id] || {reasons:[], other_note:''};
+  const rec = S.mastery[q.id] || {reasons:[], main:'', other_note:''};
   const sel = new Set(rec.reasons||[]);
+  let mainSel = rec.main||'';
   const mask = document.createElement('div'); mask.className='mask'; mask.id='masteryMask';
   const sub = '第'+q.chapterIndex+'章 '+q.chapter+' · '+escapeHtml(q.stem.slice(0,30))+(q.stem.length>30?'…':'');
   const optsHtml = MASTERY_OPTS.map((o,i)=>{
@@ -1500,8 +1590,9 @@ function openMastery(q){
   }).join('');
   mask.innerHTML = '<div class="mdialog">'
     +'<div class="mhead"><span>记录本题掌握情况</span><button class="x" id="mClose" title="关闭">×</button></div>'
-    +'<div class="msub"><b>'+sub+'</b><br>用于复盘你的真实掌握程度：不仅记录错题，也记录做对的题（可能蒙对/排除法/理解不牢）。不强制，可多选，也可一项都不选直接保存。</div>'
+    +'<div class="msub"><b>'+sub+'</b><br>用于复盘你的真实掌握程度：不仅记录错题，也记录做对的题。不强制，可多选，也可一项都不选直接保存。</div>'
     +'<div id="mOpts">'+optsHtml+'</div>'
+    +'<div class="msec" id="mMainWrap"><div class="msech">主要原因（多选后，点选其一作为主因；只选一项则自动作为主因）</div><div id="mMain"></div></div>'
     +'<div class="mother hide" id="mOther"><textarea id="mOtherArea" placeholder="请输入其他原因"></textarea></div>'
     +'<div class="mfoot"><span class="mhint">已选 <b id="mCount">'+sel.size+'</b> 项</span><button class="btn sec" id="mCancel">取消</button><button class="btn" id="mSave">保存</button></div>'
     +'</div>';
@@ -1509,25 +1600,38 @@ function openMastery(q){
   const otherWrap = mask.querySelector('#mOther');
   const otherArea = mask.querySelector('#mOtherArea');
   if(sel.has('其他')){ otherWrap.classList.remove('hide'); otherArea.value = rec.other_note||''; }
+  const mMain = mask.querySelector('#mMain');
+  const renderMain = ()=>{
+    const arr=[...sel];
+    if(arr.length===0){ mMain.innerHTML='<p class="md" style="color:var(--ink3);font-size:12px;">未选择原因，则无主要原因。</p>'; mainSel=''; return; }
+    if(arr.length===1){ mainSel=arr[0]; mMain.innerHTML='<p class="md" style="color:var(--ink3);font-size:12px;">仅选 1 项，自动作为主要原因：<b>'+escapeHtml(mainSel)+'</b></p>'; return; }
+    mMain.innerHTML = arr.map(k=>'<div class="mradio'+(mainSel===k?' on':'')+'" data-k="'+escapeHtml(k)+'"><div class="rbox">'+(mainSel===k?'●':'')+'</div><div class="rt">'+escapeHtml(k)+'</div></div>').join('');
+    mMain.querySelectorAll('.mradio').forEach(el=> el.addEventListener('click', ()=>{ mainSel=el.dataset.k; mMain.querySelectorAll('.mradio').forEach(x=>{ const on=x.dataset.k===mainSel; x.classList.toggle('on',on); x.querySelector('.rbox').textContent=on?'●':''; }); }));
+  };
   const refresh = ()=>{
     let n=0;
     mask.querySelectorAll('.mopt').forEach(el=>{ if(el.classList.contains('on')) n++; });
     mask.querySelector('#mCount').textContent = n;
     const showOther = !!mask.querySelector('.mopt[data-i="5"]').classList.contains('on');
     otherWrap.classList.toggle('hide', !showOther);
+    if(mainSel && !sel.has(mainSel)) mainSel='';
+    renderMain();
   };
   mask.querySelectorAll('.mopt').forEach(el=>{
-    el.addEventListener('click', ()=>{ el.classList.toggle('on'); el.querySelector('.box').textContent = el.classList.contains('on')?'✓':''; refresh(); });
+    el.addEventListener('click', ()=>{ const on=!el.classList.contains('on'); el.classList.toggle('on',on); el.querySelector('.box').textContent=on?'✓':''; if(on) sel.add(MASTERY_OPTS[+el.dataset.i].key); else sel.delete(MASTERY_OPTS[+el.dataset.i].key); refresh(); });
   });
   mask.querySelector('#mClose').addEventListener('click', closeMastery);
   mask.querySelector('#mCancel').addEventListener('click', closeMastery);
   mask.addEventListener('click', e=>{ if(e.target===mask) closeMastery(); });
   mask.querySelector('#mSave').addEventListener('click', ()=>{
-    const reasons=[];
-    mask.querySelectorAll('.mopt.on').forEach(el=>{ reasons.push(MASTERY_OPTS[+el.dataset.i].key); });
-    const rec2 = {reasons:reasons, other_note:'', ts:Date.now()};
-    if(reasons.includes('其他')) rec2.other_note = (otherArea.value||'').trim();
-    S.mastery[q.id] = rec2; save();
+    const reasons=[...sel];
+    const otherVal = reasons.includes('其他') ? (otherArea.value||'').trim() : '';
+    const main = (reasons.length===1)? reasons[0] : (mainSel||'');
+    const rec2 = {reasons:reasons, main:main, other_note:otherVal, ts:Date.now()};
+    S.mastery[q.id] = rec2;
+    // 回写该 qid 最新一条历史记录的掌握情况（保留完整成长轨迹）
+    for(let i=S.history.length-1;i>=0;i--){ if(S.history[i].qid===q.id){ S.history[i].mastery={reasons:reasons, main:main, other:otherVal}; break; } }
+    save();
     closeMastery();
     const mb=$('#masteryBtn'); if(mb && mb._q && mb._q.id===q.id){ mb.textContent='掌握情况已记录 ✎'; }
     toast(reasons.length? '已记录掌握情况' : '已保存（未选择任何原因）');
@@ -1571,7 +1675,28 @@ $('#apiParse').addEventListener('click', ()=>{
   if(n===0){ info.textContent='未识别到地址/Key/模型，请检查粘贴内容格式。'; info.style.color='var(--red)'; }
   else { info.textContent='已识别 '+n+' 项，请核对下方无误后点「保存」。'; info.style.color='var(--blue)'; }
 });
-$('#expAll').addEventListener('click', ()=> download('cpa_alldata.json', JSON.stringify({settings:S.settings, wrong:S.wrong, stats:S.stats, marks:S.marks, fav:S.fav, draftByQ:S.draftByQ, mastery:S.mastery, chat:chatMsgs})));
+function buildAnalysis(){
+  const hist=S.history||[];
+  const chapters={};
+  hist.forEach(r=>{ if(r.correct===null||r.correct===undefined) return; const ci=r.ci; if(!chapters[ci]) chapters[ci]={practice:new Set(),problem:new Set()}; chapters[ci].practice.add(r.qid); if(!r.correct) chapters[ci].problem.add(r.qid); });
+  const ch=Object.keys(chapters).map(ci=>({ci:Number(ci),practice:chapters[ci].practice.size,problem:chapters[ci].problem.size}));
+  const kp={};
+  hist.forEach(r=>{ if(!r.mastery||!r.mastery.reasons||!r.mastery.reasons.length) return; const k=r.kp||'未分类'; kp[k]=(kp[k]||0)+1; });
+  const trend=hist.filter(r=>r.mastery&&r.mastery.main).map(r=>({ts:r.ts,main:r.mastery.main})).sort((a,b)=>a.ts-b.ts);
+  return {chapters:ch, knowledgePoints:kp, trend:trend};
+}
+function buildDiagnosisSummary(){
+  const a=buildAnalysis(); const hist=S.history||[];
+  let s='【本地学习诊断（完全离线统计，非 AI 生成）】\n';
+  s+='总作答次数：'+hist.filter(r=>r.correct!==null&&r.correct!==undefined).length+' 次\n';
+  const mc={}; hist.forEach(r=>{ if(r.mastery&&r.mastery.main) mc[r.mastery.main]=(mc[r.mastery.main]||0)+1; });
+  const tot=Object.values(mc).reduce((x,y)=>x+y,0);
+  if(tot) s+='主要问题分布：'+Object.entries(mc).sort((p,q)=>q[1]-p[1]).map(([k,v])=>k+' '+(Math.round(v/tot*100))+'%').join('、')+'\n';
+  const weak=a.chapters.map(c=>({ci:c.ci,p:c.practice,pn:c.problem,r:c.practice?Math.round(c.problem/c.practice*100):0})).sort((x,y)=>y.r-x.r).slice(0,3);
+  if(weak.length) s+='最薄弱章节（问题比例）：'+weak.map(w=>'第'+w.ci+'章 '+w.r+'%('+w.pn+'/'+w.p+')').join('、')+'\n';
+  return s;
+}
+$('#expAll').addEventListener('click', ()=> download('cpa_alldata.json', JSON.stringify({settings:S.settings, wrong:S.wrong, stats:S.stats, marks:S.marks, fav:S.fav, draftByQ:S.draftByQ, mastery:S.mastery, chat:chatMsgs, deviceId:deviceId(), history:S.history, analysis:buildAnalysis()})));
 /* 导入全部数据：与「导出全部数据」严格一对。合并而非覆盖——本地已有记录优先，文件仅补充缺失项。 */
 $('#impAll').addEventListener('click', ()=> $('#impAllFile').click());
 $('#impAllFile').addEventListener('change', e=>{
@@ -1582,7 +1707,7 @@ $('#impAllFile').addEventListener('change', e=>{
     if(!confirm('将把文件中的数据【合并】进当前设备（'+((SUBJECTS[S.subject]&&SUBJECTS[S.subject].name)||'会计')+'），已有错题/收藏/草稿/统计不会被覆盖，确定？')) return;
     // 键值型字段：以本地为准合并（本地优先，文件补缺失），绝不覆盖本地已有项
     const mergeMap=(cur, src)=>{ const m=Object.assign({}, src||{}); for(const k in cur) m[k]=cur[k]; return m; };
-    let nWrong=0,nFav=0,nMarks=0,nDraft=0,nMastery=0;
+    let nWrong=0,nFav=0,nMarks=0,nDraft=0,nMastery=0,nHist=0;
     if(obj.wrong){ const m=mergeMap(S.wrong, obj.wrong); nWrong=Object.keys(m).length-Object.keys(S.wrong).length; S.wrong=m; }
     if(obj.fav){ const m=mergeMap(S.fav, obj.fav); nFav=Object.keys(m).length-Object.keys(S.fav).length; S.fav=m; }
     if(obj.marks){ const m=mergeMap(S.marks, obj.marks); nMarks=Object.keys(m).length-Object.keys(S.marks).length; S.marks=m; }
@@ -1590,8 +1715,13 @@ $('#impAllFile').addEventListener('change', e=>{
     if(obj.mastery){ const m=mergeMap(S.mastery, obj.mastery); nMastery=Object.keys(m).length-Object.keys(S.mastery).length; S.mastery=m; }
     // 设置：本地优先
     if(obj.settings && typeof obj.settings==='object') S.settings=Object.assign({}, obj.settings, S.settings);
-    // 统计：累加（同一文件勿在同设备重复导入，否则会重复累加）
-    if(obj.stats && typeof obj.stats==='object'){ const s=obj.stats;
+    // 答题历史：按 rid 去重合并（不覆盖、保留完整时间线，根治跨设备循环导入重复）
+    if(Array.isArray(obj.history) && obj.history.length){
+      const seen=new Set((S.history||[]).map(r=>r.rid));
+      obj.history.forEach(r=>{ if(r && r.rid && !seen.has(r.rid)){ seen.add(r.rid); S.history.push(r); nHist++; } });
+      if(nHist) recomputeStats();
+    } else if(obj.stats && typeof obj.stats==='object'){ // 旧版文件（无 history）兼容：沿用累加
+      const s=obj.stats;
       S.stats.answered=(S.stats.answered||0)+(s.answered||0);
       S.stats.correct=(S.stats.correct||0)+(s.correct||0);
       S.stats.timeMs=(S.stats.timeMs||0)+(s.timeMs||0);
@@ -1603,11 +1733,11 @@ $('#impAllFile').addEventListener('change', e=>{
     // 对话：追加去重
     if(Array.isArray(obj.chat) && obj.chat.length){ const seen=new Set(chatMsgs.map(m=>JSON.stringify(m))); let added=0; obj.chat.forEach(m=>{ const k=JSON.stringify(m); if(!seen.has(k)){ seen.add(k); chatMsgs.push(m); added++; } }); if(added) store.set('cpa_chat', chatMsgs); }
     save(); renderReview(); renderStats();
-    toast('已合并导入 ✔ 错题+'+nWrong+' 收藏+'+nFav+' 标记+'+nMarks+' 草稿+'+nDraft+' 掌握情况+'+nMastery+(obj.chat&&obj.chat.length?' 对话已合并':''));
+    toast('已合并导入 ✔ 错题+'+nWrong+' 收藏+'+nFav+' 标记+'+nMarks+' 草稿+'+nDraft+' 掌握情况+'+nMastery+' 历史作答+'+nHist+(obj.chat&&obj.chat.length?' 对话已合并':''));
   }catch(err){ toast('文件格式错误：请选择「导出全部数据」生成的 cpa_alldata.json'); } };
   rd.readAsText(f); e.target.value='';
 });
-$('#resetAll').addEventListener('click', ()=>{ if(confirm('将清空【'+(SUBJECTS[S.subject]&&SUBJECTS[S.subject].name||'会计')+'】科目的全部做题/错题/统计记录，确定？')){ S.wrong={}; S.marks={}; S.fav={}; S.draftByQ={}; S.stats={answered:0,correct:0,timeMs:0,perChapter:{},perQuestion:{}}; S.session=null; store.remove('cpa_'+S.subject+'_session'); chatMsgs=[]; save(); store.set('cpa_chat',[]); initHome(); renderStats(); toast('已重置'); } });
+$('#resetAll').addEventListener('click', ()=>{ if(confirm('将清空【'+(SUBJECTS[S.subject]&&SUBJECTS[S.subject].name||'会计')+'】科目的全部做题/错题/统计/历史作答记录，确定？')){ S.wrong={}; S.marks={}; S.fav={}; S.draftByQ={}; S.stats={answered:0,correct:0,timeMs:0,perChapter:{},perQuestion:{}}; S.history=[]; S.session=null; store.remove('cpa_'+S.subject+'_session'); chatMsgs=[]; save(); store.set('cpa_chat',[]); initHome(); renderStats(); toast('已重置'); } });
 
 /* ---------- utils ---------- */
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
