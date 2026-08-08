@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#f5f5f7" />
 <title>CPA 做题工作台</title>
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="CPA 做题" />
 <style>
   :root{
     --bg:#f5f5f7; --card:#ffffff; --line:#e5e5ea; --line2:#d1d1d6;
@@ -324,6 +328,7 @@
   .mother textarea{width:100%;min-height:72px;padding:11px 13px;border:1px solid var(--line2);border-radius:12px;font-family:inherit;font-size:14px;line-height:1.5;resize:vertical;outline:none;background:#fff;color:var(--ink);box-sizing:border-box;}
   .mother textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft);}
   .mfoot{display:flex;gap:10px;justify-content:flex-end;margin-top:6px;}
+  .mfoot-top{display:flex;gap:10px;align-items:center;justify-content:space-between;margin:10px 0 4px;padding-bottom:12px;border-bottom:1px solid var(--line);}
   .mhint{font-size:12px;color:var(--ink3);margin-right:auto;align-self:center;}
   /* 主要原因选择器 */
   .msec{margin:12px 0 4px;padding:12px 14px;border:1.5px dashed var(--line2);border-radius:14px;background:var(--bg);}
@@ -729,8 +734,8 @@ const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v==null? d : JSON.parse(v); }catch(e){ return d; } },
-  set(k, v){ localStorage.setItem(k, JSON.stringify(v)); },
-  remove(k){ localStorage.removeItem(k); }
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){ /* 隐私模式 / 桌面图标 standalone 模式可能禁用 localStorage，忽略即可，本次会话内仍可用内存态 */ } },
+  remove(k){ try{ localStorage.removeItem(k); }catch(e){} }
 };
 const DEFAULT_SETTINGS = {apiBase:'https://ark.cn-beijing.volces.com/api/v3', apiKey:'', model:'deepseek-v4-flash-260425', name:'高大上的注册会计师'};
 const S = {
@@ -1616,10 +1621,10 @@ $('#cemSend').addEventListener('click', ()=>{ $('#chatText').value=$('#cemText')
 
 /* ---------- 记录本题掌握情况 ---------- */
 const MASTERY_OPTS = [
+  {key:'理解了，会分析', desc:'真正理解该知识点，能解释为什么选该答案、其他选项为什么错。'},
   {key:'不会/没学过', desc:'这个知识点我没有掌握，或者已经忘记规则。'},
   {key:'不确定，靠猜或排除', desc:'答案选对了，但自己没有明确依据；靠感觉或排除法碰巧做对。'},
   {key:'知识点记混了', desc:'知道相关知识，但不同知识点、规则或条件混淆。'},
-  {key:'理解了，会分析', desc:'真正理解该知识点，能解释为什么选该答案、其他选项为什么错。'},
   {key:'粗心/审题问题', desc:'知识点和解题方法基本掌握，但因执行错误（漏看关键词/看错要求/算错）导致错误。'},
   {key:'其他', desc:'用户自定义补充原因。', other:true}
 ];
@@ -1633,7 +1638,7 @@ function openMastery(q){
   const sub = '第'+q.chapterIndex+'章 '+q.chapter+' · '+escapeHtml(q.stem.slice(0,30))+(q.stem.length>30?'…':'');
   const optsHtml = MASTERY_OPTS.map((o,i)=>{
     const on = sel.has(o.key);
-    return '<div class="mopt'+(on?' on':'')+'" data-i="'+i+'">'
+    return '<div class="mopt'+(on?' on':'')+'" data-i="'+i+'"'+(o.other?' data-other="1"':'')+'>'
       +'<div class="box">'+(on?'✓':'')+'</div>'
       +'<div class="grow"><div class="ot">'+escapeHtml(o.key)+'</div><div class="od">'+escapeHtml(o.desc)+'</div></div>'
       +'</div>';
@@ -1641,10 +1646,11 @@ function openMastery(q){
   mask.innerHTML = '<div class="mdialog">'
     +'<div class="mhead"><span>记录本题掌握情况</span><button class="x" id="mClose" title="关闭">×</button></div>'
     +'<div class="msub"><b>'+sub+'</b><br>用于复盘你的真实掌握程度：不仅记录错题，也记录做对的题。不强制，可多选，也可一项都不选直接保存。</div>'
+    +'<div class="mfoot mfoot-top"><span class="mhint">已选 <b id="mCount">'+sel.size+'</b> 项</span><button class="btn" id="mSave">保存</button></div>'
     +'<div id="mOpts">'+optsHtml+'</div>'
     +'<div class="msec" id="mMainWrap"><div class="msech">主要原因（多选后，点选其一作为主因；只选一项则自动作为主因）</div><div id="mMain"></div></div>'
     +'<div class="mother hide" id="mOther"><textarea id="mOtherArea" placeholder="请输入其他原因"></textarea></div>'
-    +'<div class="mfoot"><span class="mhint">已选 <b id="mCount">'+sel.size+'</b> 项</span><button class="btn sec" id="mCancel">取消</button><button class="btn" id="mSave">保存</button></div>'
+    +'<div class="mfoot"><button class="btn sec" id="mCancel">取消</button></div>'
     +'</div>';
   document.body.appendChild(mask);
   const otherWrap = mask.querySelector('#mOther');
@@ -1662,7 +1668,8 @@ function openMastery(q){
     let n=0;
     mask.querySelectorAll('.mopt').forEach(el=>{ if(el.classList.contains('on')) n++; });
     mask.querySelector('#mCount').textContent = n;
-    const showOther = !!mask.querySelector('.mopt[data-i="5"]').classList.contains('on');
+    const otherOpt = mask.querySelector('.mopt[data-other="1"]');
+    const showOther = !!otherOpt && otherOpt.classList.contains('on');
     otherWrap.classList.toggle('hide', !showOther);
     if(mainSel && !sel.has(mainSel)) mainSel='';
     renderMain();
