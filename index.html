@@ -683,7 +683,17 @@
     <!-- SETTINGS -->
     <section class="view" id="view-settings">
       <h1 class="h">设置</h1>
-      <p class="sub">AI 助教接口（兼容 OpenAI 格式）</p>
+      <p class="sub">数据导出/导入与 AI 接口配置</p>
+      <div class="card">
+        <h4 style="margin:0 0 6px;">数据管理</h4>
+        <p class="md" style="color:var(--ink2);font-size:13px;margin:0 0 12px;">做题记录、错题、统计均保存在当前浏览器。换设备需手动导出/导入。</p>
+        <div class="row">
+          <button class="btn sec" id="expAll">导出全部数据</button>
+          <button class="btn sec" id="impAll">导入全部数据</button>
+          <button class="btn sec" id="resetAll">重置全部数据</button>
+        </div>
+        <p class="md" style="color:var(--ink2);font-size:12px;margin:8px 0 0;">「导入全部数据」与「导出全部数据」为一对：选导出的 cpa_alldata.json，<b>合并</b>进当前设备（不覆盖已有错题/收藏/草稿/统计）。</p>
+      </div>
       <div class="card" id="importApiCard">
         <h4 style="margin:0 0 6px;">① 一键填写接口信息</h4>
         <p class="md" style="color:var(--ink2);font-size:13px;margin:0 0 10px;">把你拿到的接口信息（含地址、Key、模型）整段粘贴到下面，点「识别填写」，系统会自动填入下方对应框。请<b>核对无误后再点底部「保存」</b>。识别过程完全在你本机进行，不会把密钥发给任何服务器。</p>
@@ -706,16 +716,6 @@
           <span class="md" style="color:var(--ink2);">🔒 密钥只保存在<b>你这台设备的浏览器</b>（localStorage）里，不会上传到任何服务器，别人打开这个链接也看不到、用不了你的 Key。只有当你亲自提问时，才会把题目发给你所填的接口地址。</span>
           <button class="btn" id="saveSet">保存</button>
         </div>
-      </div>
-      <div class="card">
-        <h4 style="margin:0 0 6px;">数据管理</h4>
-        <p class="md" style="color:var(--ink2);font-size:13px;margin:0 0 12px;">做题记录、错题、统计均保存在当前浏览器。换设备需手动导出/导入。</p>
-        <div class="row">
-          <button class="btn sec" id="expAll">导出全部数据</button>
-          <button class="btn sec" id="impAll">导入全部数据</button>
-          <button class="btn sec" id="resetAll">重置全部数据</button>
-        </div>
-        <p class="md" style="color:var(--ink2);font-size:12px;margin:8px 0 0;">「导入全部数据」与「导出全部数据」为一对：选导出的 cpa_alldata.json，<b>合并</b>进当前设备（不覆盖已有错题/收藏/草稿/统计）。</p>
       </div>
     </section>
 
