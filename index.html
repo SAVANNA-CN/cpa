@@ -429,6 +429,14 @@
               <button data-t="single">单选</button>
               <button data-t="multiple">多选</button>
             </div>
+            <label class="fl">练习数量（优先未做过）</label>
+            <input type="number" id="chapterNum" value="20" min="1" max="999" />
+            <div class="seg" id="chapterQtyPresets" style="margin-top:14px;">
+              <button data-n="10">10</button>
+              <button data-n="20" class="on">20</button>
+              <button data-n="30">30</button>
+              <button data-n="0">全部</button>
+            </div>
             <button class="btn mode-start" id="chapterStart">开始练习 →</button>
           </div>
         </div>
@@ -923,6 +931,7 @@ function showView(v){
 
 /* ---------- home setup ---------- */
 let chosenMode = null;
+let lastQueueMsg = '';
 let homeBound = false;
 function initHome(){
   $('#totalQ').textContent = D().questions.filter(q=>q.type==='single'||q.type==='multiple').length;
@@ -940,6 +949,15 @@ function initHome(){
     $$('.mode-head').forEach(h=> h.addEventListener('click', ()=> toggleMode(h.closest('.mode').dataset.mode)));
     $('#typeSeg').querySelectorAll('button').forEach(b=> b.addEventListener('click', ()=> segPick('#typeSeg', b)));
     $('#randTypeSeg').querySelectorAll('button').forEach(b=> b.addEventListener('click', ()=> segPick('#randTypeSeg', b)));
+    $('#chapterQtyPresets').querySelectorAll('button').forEach(b=> b.addEventListener('click', ()=>{
+      $('#chapterQtyPresets').querySelectorAll('button').forEach(x=> x.classList.remove('on'));
+      b.classList.add('on');
+      $('#chapterNum').value = b.dataset.n;
+    }));
+    $('#chapterNum').addEventListener('input', ()=>{
+      const v = $('#chapterNum').value;
+      $('#chapterQtyPresets').querySelectorAll('button').forEach(x=> x.classList.toggle('on', x.dataset.n === v));
+    });
     $('#chapterStart').addEventListener('click', ()=> startMode('chapter'));
     $('#randomStart').addEventListener('click', ()=> startMode('random'));
     $('#comboWrong').addEventListener('click', ()=> startMode('wrong'));
@@ -968,25 +986,42 @@ function toggleMode(mode){
 }
 
 /* ---------- session ---------- */
+function doneSet(){ return new Set((S.history||[]).map(r=>r.qid)); }
+function shuffle(arr){ arr=arr.slice(); for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
 function buildQueue(){
   let ids=[];
+  lastQueueMsg='';
   if(chosenMode==='chapter'){
     const ci = parseInt($('#chapterSel').value,10);
     const t = $('#typeSeg').querySelector('.on').dataset.t;
-    const pq = S.stats.perQuestion || {};
-    const attempted = q => pq[q.id] && pq[q.id].attempts>0;
-    ids = D().questions
-      .filter(q=> q.chapterIndex===ci && (t==='all'||q.type===t))
-      .sort((a,b)=> (attempted(a)?1:0) - (attempted(b)?1:0))   // 没做过的题优先排前面
-      .map(q=>q.id);
+    const raw = $('#chapterNum').value;
+    const n = (raw===''||raw==null) ? 0 : parseInt(raw,10);
+    const total = (isNaN(n) || n<=0) ? Infinity : n;
+    const done = doneSet();
+    let qs = D().questions.filter(q=> q.chapterIndex===ci && (t==='all'||q.type===t));
+    const undone = qs.filter(q=> !done.has(q.id));
+    const doneQs = qs.filter(q=> done.has(q.id));
+    // 优先未做过的题；不足数量时再用做过的题补足
+    let sel = undone.slice(0, total);
+    if(sel.length < total) sel = sel.concat(doneQs.slice(0, total - sel.length));
+    if(total!==Infinity && undone.length < total && undone.length < qs.length){
+      lastQueueMsg = '本章未做过的题仅剩 '+undone.length+' 道，已用做过的题补足到 '+total+' 道';
+    }
+    ids = sel.map(q=>q.id);
   } else if(chosenMode==='random'){
     const n = Math.max(1, parseInt($('#randNum').value,10)||20);
     const t = $('#randTypeSeg').querySelector('.on').dataset.t;
+    const done = doneSet();
     let pool = D().questions.filter(q=> q.type==='single'||q.type==='multiple');
     if(t!=='all') pool = pool.filter(q=>q.type===t);
-    pool = pool.slice();
-    for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
-    ids = pool.slice(0, Math.min(n, pool.length)).map(q=>q.id);
+    // 优先未做过的题；不足数量时再用做过的题补足
+    const undone = shuffle(pool.filter(q=> !done.has(q.id)));
+    const doneQs = shuffle(pool.filter(q=> done.has(q.id)));
+    let combined = undone.concat(doneQs).slice(0, n);
+    if(combined.length < n && undone.length < pool.length){
+      lastQueueMsg = '未做过的题仅剩 '+undone.length+' 道，已用做过的题补足到 '+n+' 道';
+    }
+    ids = combined.map(q=>q.id);
   } else if(chosenMode==='wrong'){
     ids = Object.keys(S.wrong).filter(id=>qById(id)).map(Number);
   } else if(chosenMode==='fav'){
@@ -1001,6 +1036,7 @@ function startSession(){
   S.session = newSession(ids, chosenMode);
   showView('practice');
   renderQuestion();
+  if(lastQueueMsg) toast(lastQueueMsg);
 }
 function qById(id){ return D().questions.find(q=>q.id===Number(id)); }
 function resumeSession(autoShow){
