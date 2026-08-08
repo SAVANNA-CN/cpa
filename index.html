@@ -736,7 +736,7 @@ $$('.nav-item').forEach(n=>{
   let lastTap = 0;
   homeNav.addEventListener('click', ()=>{
     const now = Date.now();
-    if(now - lastTap < 350){ location.reload(); return; }
+    if(now - lastTap < 350){ try{ sessionStorage.setItem('cpa_just_refreshed','1'); }catch(e){} location.reload(); return; }
     lastTap = now;
   });
 })();
@@ -1806,6 +1806,10 @@ $$('#markBar button[data-mk]').forEach(b=>{
 });
 
 /* ---------- boot ---------- */
+// 双击「练习」刷新后：检测到重载标记再弹「已刷新 ✅」确认提示
+(function(){
+  try{ if(sessionStorage.getItem('cpa_just_refreshed')==='1'){ sessionStorage.removeItem('cpa_just_refreshed'); toast('已刷新 ✅'); } }catch(e){}
+})();
 initHome();
 initSettings();
 // 自动恢复上次未完成的练习，停留在上次做题的题页面
