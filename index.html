@@ -587,45 +587,63 @@
 
     <!-- STATS -->
     <section class="view" id="view-stats">
-      <h1 class="h">学习统计</h1>
+      <h1 class="h">学习分析</h1>
       <p class="sub">全设备统一学习画像 · 完全离线运行</p>
-      <div class="statgrid">
-        <div class="stat"><div class="v" id="sAns">0</div><div class="l">已作答</div></div>
-        <div class="stat"><div class="v" id="sAcc" style="color:var(--green);">0%</div><div class="l">正确率</div></div>
-        <div class="stat"><div class="v" id="sTime">0s</div><div class="l">平均用时</div></div>
-        <div class="stat"><div class="v" id="sWrong" style="color:var(--red);">0</div><div class="l">错题数</div></div>
-      </div>
-      <div class="card">
-        <h4 style="margin:0 0 12px;font-size:14px;">各章正确率</h4>
-        <div id="sBars"></div>
+
+      <div class="seg" id="statSeg" style="margin-bottom:18px;">
+        <button data-tab="stats" class="on">学习统计</button>
+        <button data-tab="diag">掌握情况分析</button>
       </div>
 
-      <!-- 学习诊断分析（离线 CPA 个人学习诊断系统） -->
-      <h1 class="h" style="margin-top:26px;">学习诊断分析</h1>
-      <p class="sub">跨设备统一 · 全量学习行为诊断 · 完全离线</p>
-
-      <div class="card">
-        <h4 style="margin:0 0 4px;font-size:14px;">模块一 · 我的主要问题分布</h4>
-        <p class="md" style="color:var(--ink2);font-size:12px;margin:0 0 12px;">只统计每道题的「主要原因」，合计 100%。</p>
-        <div id="dMod1"></div>
+      <!-- 面板一：学习统计 -->
+      <div id="statPanelStats">
+        <div class="statgrid">
+          <div class="stat"><div class="v" id="sAns">0</div><div class="l">已作答</div></div>
+          <div class="stat"><div class="v" id="sAcc" style="color:var(--green);">0%</div><div class="l">正确率</div></div>
+          <div class="stat"><div class="v" id="sTime">0s</div><div class="l">平均用时</div></div>
+          <div class="stat"><div class="v" id="sWrong" style="color:var(--red);">0</div><div class="l">错题数</div></div>
+        </div>
+        <div class="card">
+          <h4 style="margin:0 0 12px;font-size:14px;">各章正确率</h4>
+          <div id="sBars"></div>
+        </div>
       </div>
 
-      <div class="card">
-        <h4 style="margin:0 0 4px;font-size:14px;">模块二 · 章节掌握情况（薄弱优先）</h4>
-        <p class="md" style="color:var(--ink2);font-size:12px;margin:0 0 12px;">问题比例 = 该章有错误作答的题目数 ÷ 该章练习题目总数。优先展示高问题比例章节。</p>
-        <div id="dMod2"></div>
-      </div>
+      <!-- 面板二：掌握情况分析 -->
+      <div id="statPanelDiag" class="hide">
+        <div class="statgrid">
+          <div class="stat"><div class="v" id="mRec">0</div><div class="l">已记录掌握情况</div></div>
+          <div class="stat"><div class="v" id="mWeak" style="color:var(--red);">0</div><div class="l">标记薄弱</div></div>
+          <div class="stat"><div class="v" id="mStable" style="color:var(--green);">0</div><div class="l">稳定已掌握</div></div>
+          <div class="stat"><div class="v" id="mUnstable">0</div><div class="l">做对但不稳定</div></div>
+        </div>
 
-      <div class="card">
-        <h4 style="margin:0 0 4px;font-size:14px;">模块三 · 知识点漏洞地图</h4>
-        <p class="md" style="color:var(--ink2);font-size:12px;margin:0 0 12px;">以知识点为最小分析单位，展示练习次数与历史变化（使用全部原因记录）。</p>
-        <div id="dMod3"></div>
-      </div>
+        <h1 class="h" style="margin-top:26px;">学习诊断分析</h1>
+        <p class="sub">跨设备统一 · 全量学习行为诊断 · 完全离线</p>
 
-      <div class="card">
-        <h4 style="margin:0 0 4px;font-size:14px;">模块四 · 掌握变化趋势</h4>
-        <p class="md" style="color:var(--ink2);font-size:12px;margin:0 0 12px;">按时间观察你从「不会」到「理解，会分析」的进步轨迹。</p>
-        <div id="dMod4"></div>
+        <div class="card">
+          <h4 style="margin:0 0 4px;font-size:14px;">模块一 · 我的主要问题分布</h4>
+          <p class="md" style="color:var(--ink2);font-size:12px;margin:0 0 12px;">只统计每道题的「主要原因」，合计 100%。</p>
+          <div id="dMod1"></div>
+        </div>
+
+        <div class="card">
+          <h4 style="margin:0 0 4px;font-size:14px;">模块二 · 章节掌握情况（薄弱优先）</h4>
+          <p class="md" style="color:var(--ink2);font-size:12px;margin:0 0 12px;">问题比例 = 该章有错误作答的题目数 ÷ 该章练习题目总数。优先展示高问题比例章节。</p>
+          <div id="dMod2"></div>
+        </div>
+
+        <div class="card">
+          <h4 style="margin:0 0 4px;font-size:14px;">模块三 · 知识点漏洞地图</h4>
+          <p class="md" style="color:var(--ink2);font-size:12px;margin:0 0 12px;">以知识点为最小分析单位，展示练习次数与历史变化（使用全部原因记录）。</p>
+          <div id="dMod3"></div>
+        </div>
+
+        <div class="card">
+          <h4 style="margin:0 0 4px;font-size:14px;">模块四 · 掌握变化趋势</h4>
+          <p class="md" style="color:var(--ink2);font-size:12px;margin:0 0 12px;">按时间观察你从「不会」到「理解，会分析」的进步轨迹。</p>
+          <div id="dMod4"></div>
+        </div>
       </div>
     </section>
 
@@ -1217,6 +1235,7 @@ $('#wFile').addEventListener('change', e=>{
 });
 
 /* ---------- stats ---------- */
+let statTab = store.get('cpa_stat_tab', 'stats');
 function renderStats(){
   const st = S.stats;
   $('#sAns').textContent = st.answered;
@@ -1234,7 +1253,38 @@ function renderStats(){
       bars.appendChild(el);
     });
   }
+  renderMasteryOverview();
   renderDiagnosis();
+  applyStatTab();
+}
+function renderMasteryOverview(){
+  const hist = S.history || [];
+  const byQid = {};
+  hist.forEach(r=>{ (byQid[r.qid] || (byQid[r.qid]=[])).push(r); });
+  let rec=0, weak=0, stable=0, unstable=0;
+  const WEAK = {'不会/没学过':1,'不确定，靠猜或排除':1,'知识点记混了':1};
+  Object.keys(byQid).forEach(qid=>{
+    const recs = byQid[qid];
+    let m=null;
+    for(let i=recs.length-1;i>=0;i--){ const x=recs[i].mastery; if(x && (x.main || (x.reasons && x.reasons.length))){ m=x; break; } }
+    if(!m) return;
+    rec++;
+    const everCorrect = recs.some(r=>r.correct===true);
+    const main = m.main;
+    if(main && WEAK[main]) weak++;
+    else if(main==='理解了，会分析'){ if(everCorrect) stable++; }
+    else if(everCorrect) unstable++;
+  });
+  $('#mRec').textContent = rec;
+  $('#mWeak').textContent = weak;
+  $('#mStable').textContent = stable;
+  $('#mUnstable').textContent = unstable;
+}
+function applyStatTab(){
+  const showStats = statTab==='stats';
+  $('#statPanelStats').classList.toggle('hide', !showStats);
+  $('#statPanelDiag').classList.toggle('hide', showStats);
+  $$('#statSeg button').forEach(x=> x.classList.toggle('on', x.dataset.tab===statTab));
 }
 
 /* ---------- 章节掌握分析 ---------- */
@@ -1946,6 +1996,11 @@ initSettings();
 resumeSession();
 // 科目切换器：点击切换并整体换题库/错题/收藏/统计/进度
 $$('#subjSeg .subj-btn').forEach(b=> b.addEventListener('click', ()=> switchSubject(b.dataset.s)));
+$$('#statSeg button').forEach(b=> b.addEventListener('click', ()=>{
+  statTab = b.dataset.tab;
+  store.set('cpa_stat_tab', statTab);
+  applyStatTab();
+}));
 syncSubjUI();
 </script>
 </body>
