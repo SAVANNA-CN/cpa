@@ -325,6 +325,12 @@
   .mother textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft);}
   .mfoot{display:flex;gap:10px;justify-content:flex-end;margin-top:6px;}
   .mhint{font-size:12px;color:var(--ink3);margin-right:auto;align-self:center;}
+  /* 下拉刷新指示器（移动端主屏幕模式） */
+  .ptr{position:fixed;left:0;right:0;top:0;height:0;overflow:hidden;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;gap:9px;font-size:14px;z-index:4000;transition:height .2s ease;will-change:height;pointer-events:none;}
+  .ptr .ptr-ico{font-size:18px;line-height:1;display:inline-block;transition:transform .2s;}
+  .ptr.ready .ptr-ico{transform:rotate(180deg);}
+  .ptr.spin .ptr-ico{animation:ptrspin .8s linear infinite;}
+  @keyframes ptrspin{to{transform:rotate(360deg);}}
 </style>
 <script src="https://beacon.cdn.qq.com/sdk/4.5.9/beacon_web.min.js"></script>
 <script>
@@ -1272,6 +1278,40 @@ function masteryTip(weakCounts, understood, mcount){
   }
   return '';
 }
+
+/* ---------- 下拉刷新（移动端主屏幕模式） ---------- */
+(function(){
+  if(!('ontouchstart' in window) && !(navigator.maxTouchPoints>0)) return;
+  var TH=72, MAX=96;
+  var startY=0, dy=0, pulling=false, busy=false;
+  var ind=document.createElement('div'); ind.className='ptr';
+  ind.innerHTML='<span class="ptr-ico">↓</span><span class="ptr-txt">下拉刷新</span>';
+  document.body.appendChild(ind);
+  var label=ind.querySelector('.ptr-txt'), ico=ind.querySelector('.ptr-ico');
+  function top(){ return window.pageYOffset||document.documentElement.scrollTop||document.body.scrollTop||0; }
+  function onStart(e){ if(busy) return; if(e.touches.length!==1) return; if(top()>0) return; startY=e.touches[0].clientY; dy=0; pulling=true; }
+  function onMove(e){
+    if(!pulling||busy) return;
+    dy=e.touches[0].clientY-startY;
+    if(dy<=0){ ind.classList.remove('show','ready'); ind.style.height='0px'; pulling=false; return; }
+    if(e.cancelable) e.preventDefault();
+    var d=Math.min(dy*0.5, MAX);
+    ind.classList.add('show');
+    ind.style.height=d+'px';
+    if(d>=TH){ ind.classList.add('ready'); label.textContent='松手刷新'; }
+    else { ind.classList.remove('ready'); label.textContent='下拉刷新'; }
+  }
+  function onEnd(){
+    if(!pulling||busy) return; pulling=false;
+    var d=Math.min(dy*0.5, MAX);
+    if(d>=TH){ busy=true; ind.classList.remove('ready'); ind.classList.add('spin'); ind.style.height='52px'; label.textContent='刷新中…'; ico.textContent='↻'; setTimeout(function(){ location.reload(); },450); }
+    else { ind.classList.remove('show','ready'); ind.style.height='0px'; }
+  }
+  document.addEventListener('touchstart', onStart, {passive:true});
+  document.addEventListener('touchmove', onMove, {passive:false});
+  document.addEventListener('touchend', onEnd, {passive:true});
+  document.addEventListener('touchcancel', onEnd, {passive:true});
+})();
 
 /* ---------- chat ---------- */
 let chatMsgs = store.get('cpa_chat', []);
